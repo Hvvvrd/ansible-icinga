@@ -1,0 +1,46 @@
+---
+- name: Install package requirements
+  yum:
+    name: "{{ item.package }}"
+    state: present
+  loop: '{{ icinga2_requirements }}'
+
+- name: Install Icinga2 Yum Key
+  rpm_key:
+    key: '{{ icinga2_apt_key }}'
+    state: present
+  register: _yum
+  retries: 3
+  delay: 10
+  until: _yum is not failed
+
+- name: Get Icinga2 Yum Repo (Fedora)
+  get_url:
+    url: '{{ icinga2_url_yum_fedora }}'
+    dest: '{{ icinga2_repo_yum }}'
+  when: ansible_distribution == 'Fedora'
+
+- name: Get Icinga2 Yum Repo on RedHat OS family
+  get_url:
+    url: '{{ icinga2_url_yum }}'
+    dest: '{{ icinga2_repo_yum }}'
+
+- name: Install Icinga2 core on RedHat OS family
+  yum:
+    name: '{{ item.package }}'
+    state: '{{ item.state|default("present") }}'
+  loop: '{{ icinga2_core_yum_packages }}'
+
+- name: Install Icinga2 postgres IDO on RedHat OS family
+  yum:
+    name: '{{ item.package }}'
+    state: '{{ item.state|default("present") }}'
+  loop: '{{ icinga2_ido_postgres_yum_packages }}'
+  when: icinga2_ido_with_postgres
+
+- name: Enable Icinga2 service
+  service:
+    name: icinga2
+    enabled: true
+    state: started    # FIXME: enable when requested
+  ignore_errors: true

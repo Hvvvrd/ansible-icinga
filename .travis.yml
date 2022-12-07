@@ -1,0 +1,21 @@
+---
+language: python
+services: docker
+
+env:
+  global:
+    - ROLE_NAME: icinga2
+
+install:
+  # Install test dependencies.
+  - pip install docker
+
+before_script:
+  # Use actual Ansible Galaxy role name for the project directory.
+  - cd ../
+  - mv ansible-role-$ROLE_NAME hvvvrd.$ROLE_NAME
+  - cd hvvvrd.$ROLE_NAME
+
+notifications:
+  webhooks:
+    - https://galaxy.ansible.com/api/v1/notifications/

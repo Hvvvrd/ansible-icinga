@@ -1,0 +1,47 @@
+---
+- name: Copy Main Icinga2 Configuration
+  template:
+    src: icinga2.conf.j2
+    dest: '{{ icinga2_main_conf }}'
+    backup: true
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart icinga2
+
+- name: Copy zones.conf
+  template:
+    src: zones.conf.j2
+    dest: '{{ icinga2_config_dir }}/zones.conf'
+    backup: true
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart icinga2
+
+- name: Copy Check Commands Configuration
+  template:
+    src: icinga2_check_commands.j2
+    dest: '{{ icinga2_conf_d }}/check_commands.conf'
+    backup: true
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart icinga2
+
+- name: "Deploy apiusers.conf"
+  template:
+    src: apiusers.conf.j2
+    dest: '{{ icinga2_apiusers_conf }}'
+    owner: '{{ icinga2_user }}'
+    mode: 0600
+  tags: icinga2_apiusers
+  notify:
+    - restart icinga2
+
+- name: "Update icinga2 features"
+  icinga2_features:
+    features: '{{ __icinga2_features|combine(icinga2_features) }}'
